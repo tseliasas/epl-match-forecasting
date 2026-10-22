@@ -23,7 +23,7 @@ def to_long(df):
         "Date": df["Date"],
         "season": df["season"],
         "team": df["AwayTeam"],
-        "is_home": 2,
+        "is_home": 0,
         "gf": df["FTAG"],
         "ga": df["FTHG"],
         "sot_for": df["AST"],
@@ -37,8 +37,6 @@ def to_long(df):
     )
     return long.sort_values(["team", "Date"]).reset_index(drop=True)
 
-
-# Mean of each stat over the previous `window` matches, never including this one
 def add_rolling(long, group_cols, window, tag):
     grouped = long.groupby(group_cols)
     for stat in STATS:
@@ -58,8 +56,8 @@ if __name__ == "__main__":
     df = pd.read_csv(PROCESSED_DIR / "matches.csv", parse_dates=["Date"])
     long = to_long(df)
     for w in WINDOWS:
-        long = add_rolling(long, ["team"], w, "all")               # all matches
-        long = add_rolling(long, ["team", "is_home"], w, "venue")  # home-only or away-only
+        long = add_rolling(long, ["team"], w, "all")
+        long = add_rolling(long, ["team", "is_home"], w, "venue")
     long = add_rest_days(long)
 
     cols = ["Date", "is_home", "points", "points_all5", "points_venue5", "rest_days"]
