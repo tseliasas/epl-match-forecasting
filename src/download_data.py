@@ -6,7 +6,7 @@ import requests
 BASE_URL = "https://www.football-data.co.uk/mmz4281/{code}/E0.csv"
 RAW_DIR = Path(__file__).resolve().parent.parent / "data" / "raw"
 
-FIRST_START_YEAR = 2016
+FIRST_START_YEAR = 2015 # I will use the 2015/16 season as warmup to determine elos for teams, not used for training
 LAST_START_YEAR = 2025
 
 def season_code(start_year):
