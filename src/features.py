@@ -51,6 +51,35 @@ def add_rest_days(long):
     long["rest_days"] = long.groupby("team")["Date"].diff().dt.days
     return long
 
+START_ELO = 1500
+K = 20
+HOME_ADV = 60
+
+def expected(r_a, r_b):
+    return 1 / (1 + 10 ** ((r_b - r_a) / 400))
+
+def add_elo(df):
+    ratings = {}
+    home_pre, away_pre = [], []
+    for row in df.itertuples():
+        rh = ratings.get(row.HomeTeam, START_ELO)
+        ra = ratings.get(row.AwayTeam, START_ELO)
+
+        home_pre.append(rh)
+        away_pre.append(ra)
+
+        e_home = expected(rh + HOME_ADV, ra)
+        s_home = {"H": 1, "D": 0.5, "A": 0}[row.FTR]
+        change = K * (s_home - e_home)
+
+        ratings[row.HomeTeam] = rh + change
+        ratings[row.AwayTeam] = ra - change
+
+    df["elo_home"] = home_pre
+    df["elo_away"] = away_pre
+    df["elo_diff"] = df["elo_home"] - df["elo_away"]
+    return df, ratings
+
 
 if __name__ == "__main__":
     df = pd.read_csv(PROCESSED_DIR / "matches.csv", parse_dates=["Date"])
@@ -62,3 +91,6 @@ if __name__ == "__main__":
 
     cols = ["Date", "is_home", "points", "points_all5", "points_venue5", "rest_days"]
     print(long[long["team"] == "Arsenal"][cols].head(12))
+    df, ratings = add_elo(df)
+    print(pd.Series(ratings).sort_values(ascending=False).head(6).round(0))
+
