@@ -6,11 +6,11 @@ from data_prep import PROCESSED_DIR
 OUTCOMES = ["H", "D", "A"]
 VAL_SEASONS = [2019, 2020, 2021, 2022]
 TEST_SEASONS = [2023, 2024, 2025]   # touched once, in M6
-
+FIRST_MODEL_SEASON = 2016
 
 def load_matches():
-    return pd.read_csv(PROCESSED_DIR / "matches.csv", parse_dates=["Date"])
-
+    df = pd.read_csv(PROCESSED_DIR / "matches.csv", parse_dates=["Date"])
+    return df[df["season"] >= FIRST_MODEL_SEASON]
 
 # Yield (season, train, val): train on all earlier seasons, validate on one
 def walk_forward_splits(df, val_seasons=VAL_SEASONS):
