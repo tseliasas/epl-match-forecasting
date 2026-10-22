@@ -47,3 +47,20 @@ def add_rolling(long, group_cols, window, tag):
         )
     return long
 
+
+# Days since this team's previous match
+def add_rest_days(long):
+    long["rest_days"] = long.groupby("team")["Date"].diff().dt.days
+    return long
+
+
+if __name__ == "__main__":
+    df = pd.read_csv(PROCESSED_DIR / "matches.csv", parse_dates=["Date"])
+    long = to_long(df)
+    for w in WINDOWS:
+        long = add_rolling(long, ["team"], w, "all")               # all matches
+        long = add_rolling(long, ["team", "is_home"], w, "venue")  # home-only or away-only
+    long = add_rest_days(long)
+
+    cols = ["Date", "is_home", "points", "points_all5", "points_venue5", "rest_days"]
+    print(long[long["team"] == "Arsenal"][cols].head(12))
