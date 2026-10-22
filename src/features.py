@@ -61,7 +61,20 @@ def expected(r_a, r_b):
 def add_elo(df):
     ratings = {}
     home_pre, away_pre = [], []
+    current_season, prev_teams = None, set()
+
     for row in df.itertuples():
+        if row.season != current_season:
+            season_teams = set(df.loc[df["season"] == row.season, "HomeTeam"])
+            if prev_teams:
+                relegated = prev_teams - season_teams
+                promoted = season_teams - prev_teams
+                baseline = sum(ratings[t] for t in relegated) / len(relegated)
+                for team in promoted:
+                    ratings[team] = baseline
+            prev_teams = season_teams
+            current_season = row.season
+
         rh = ratings.get(row.HomeTeam, START_ELO)
         ra = ratings.get(row.AwayTeam, START_ELO)
 
